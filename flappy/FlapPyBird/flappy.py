@@ -1,12 +1,11 @@
-from itertools import cycle
 import random
-import sys
+from itertools import cycle
 from pprint import pprint
-
 import pygame
+
 from pygame.locals import *
 
-from .constants import *
+from FlapPyBird.constants import *
 
 
 def main():
@@ -15,8 +14,6 @@ def main():
     FPSCLOCK = pygame.time.Clock()
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption('Flappy Bird')
-
-
 
     while True:
         # select random background sprites
