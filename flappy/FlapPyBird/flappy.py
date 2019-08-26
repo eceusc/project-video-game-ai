@@ -173,13 +173,6 @@ def main_game(movement_info):
         crashTest = checkCrash({'x': player_x, 'y': player_y, 'index': playerIndex},
                                upperPipes, lowerPipes)
 
-        if player_y > 0.4 * SCREENHEIGHT and enabled:
-            if player_y > -2 * IMAGES['player'][0].get_height():
-                playerVelY = playerFlapAcc
-                playerFlapped = True
-                # SOUNDS['wing'].play()
-
-
         if crashTest[0]:
             return {
                 'y'          : player_y,
