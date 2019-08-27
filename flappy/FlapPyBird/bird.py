@@ -28,7 +28,7 @@ class Bird:
         'player_index'    : 0,  # index of which player image to render
         'player_index_gen': cycle([0, 1, 2, 1]),  # cycle to animate the images
         'shm'             : {'val': 0, 'dir': 1},  # object to track motion of bird
-        'movement_info'  : None, # TODO
+        'movement_info'   : None,  # TODO
     }
 
     lower_pipes = None
@@ -86,7 +86,9 @@ class Bird:
         return pformat(vars(self))
 
     def flap(self):
-        pass
+        if self.pos_y > -2 * IMAGES['player'][0].get_height():
+            self.vel_y = self.acc_flap
+            self.flapped = True
 
     @staticmethod
     def random_height():
@@ -98,8 +100,7 @@ class Bird:
         interval = [0.2, 0.8]
         return int(SCREENHEIGHT * random.uniform(*interval))
 
-    @staticmethod
-    def check_crash():
+    def check_crash(self):
         """
         Checks if there was a crash with pipes for the current bird.
         Returns: [crash_pipe, crash_ground].
@@ -111,6 +112,43 @@ class Bird:
                                                                               'initializing the first bird'
 
         # player = self
+        player_index = self.player_index
+        player_width = IMAGES['player'][0].get_width()
+        player_height = IMAGES['player'][0].get_height()
+
+        pos_y = self.pos_y
+        pos_x = self.pos_x
+        upper_pipes = self.upper_pipes
+        lower_pipes = self.lower_pipes
+        # if player crashes into ground
+
+        if pos_y + player_height >= BASE_Y - 1:
+            return [True, True]
+        else:
+
+            playerRect = pygame.Rect(pos_x, pos_y, player_width, player_height)
+
+            pipe_width = IMAGES['pipe'][0].get_width()
+            pipe_height = IMAGES['pipe'][0].get_height()
+
+            for uPipe, lPipe in zip(upper_pipes, lower_pipes):
+                # upper and lower pipe rects
+                uPipeRect = pygame.Rect(uPipe['x'], uPipe['y'], pipe_width, pipe_height)
+                lPipeRect = pygame.Rect(lPipe['x'], lPipe['y'], pipe_width, pipe_height)
+
+                # player and upper/lower pipe hitmasks
+                pHitMask = HIT_MASKS['player'][player_index]
+                uHitmask = HIT_MASKS['pipe'][0]
+                lHitmask = HIT_MASKS['pipe'][1]
+
+                # if bird collided with upipe or lpipe
+                uCollide = pixel_collision(playerRect, uPipeRect, pHitMask, uHitmask)
+                lCollide = pixel_collision(playerRect, lPipeRect, pHitMask, lHitmask)
+
+                if uCollide or lCollide:
+                    return [True, False]
+
+        return [False, False]
 
     def simple_harmonic_motion(self):
         """
@@ -141,3 +179,30 @@ class Bird:
         playerShm(playerShmVals)
 
         pass
+
+
+def pixel_collision(rect1, rect2, hitmask1, hitmask2):
+    """Checks if two objects collide and not just their rects"""
+    rect = rect1.clip(rect2)
+
+    if rect.width == 0 or rect.height == 0:
+        return False
+
+    x1, y1 = rect.x - rect1.x, rect.y - rect1.y
+    x2, y2 = rect.x - rect2.x, rect.y - rect2.y
+
+    for x in range(rect.width):
+        for y in range(rect.height):
+            if hitmask1[x1 + x][y1 + y] and hitmask2[x2 + x][y2 + y]:
+                return True
+    return False
+
+
+def get_hitmask(image):
+    """returns a hitmask using an image's alpha."""
+    mask = []
+    for x in range(image.get_width()):
+        mask.append([])
+        for y in range(image.get_height()):
+            mask[x].append(bool(image.get_at((x, y))[3]))
+    return mask

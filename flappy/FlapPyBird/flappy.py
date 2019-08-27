@@ -92,7 +92,7 @@ def show_welcome_animation():
                     'basex'         : basex,
                     'playerIndexGen': playerIndexGen,
                 }
-
+        ## bird.animate()
         # adjust playery, playerIndex, basex
         if (loopIter + 1) % 5 == 0:
             playerIndex = next(playerIndexGen)
@@ -355,7 +355,7 @@ def showScore(score):
 
 
 def checkCrash(player, upperPipes, lowerPipes):
-    """returns True if player collders with base or pipes."""
+    """returns True if player collides with base or pipes."""
     pi = player['index']
     player['w'] = IMAGES['player'][0].get_width()
     player['h'] = IMAGES['player'][0].get_height()
