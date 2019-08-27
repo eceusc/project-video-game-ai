@@ -30,6 +30,8 @@ class Bird:
         'shm'             : {'val': 0, 'dir': 1},  # object to track motion of bird
         'base_x'          : 0,  # coordinate of base???
         'base_shift'      : IMAGES['base'].get_width() - IMAGES['background'].get_width(),  # max shift amount
+        'crash_test'      : (True, False),  # helps track if the bird crashed, and how
+        'alive'           : True,  # helps track if the bird is alive in the population
 
     }
 
@@ -130,9 +132,9 @@ class Bird:
         # if player crashes into ground
 
         if pos_y + player_height >= BASE_Y - 1:
-            return [True, True]
+            self.crash_test = True, True
+            return
         else:
-
             playerRect = pygame.Rect(pos_x, pos_y, player_width, player_height)
 
             pipe_width = IMAGES['pipe'][0].get_width()
@@ -153,9 +155,10 @@ class Bird:
                 lCollide = pixel_collision(playerRect, lPipeRect, pHitMask, lHitmask)
 
                 if uCollide or lCollide:
-                    return [True, False]
+                    self.crash_test = True, False
+                    return
 
-        return [False, False]
+        return
 
     def simple_harmonic_motion(self):
         """
@@ -214,3 +217,16 @@ class Bird:
             pipe_mid_position = pipe['x'] + pipe_width
             if pipe_mid_position <= player_mid_position < pipe_mid_position + 4:
                 self.score += 1
+
+    def ai(self):
+        """
+        This function is called if the AI is enabled every game tick.
+        Returns:
+
+        """
+        # check if bird is dead. Dead ai doesn't work.
+        pass
+
+    def handle_crash(self):
+        assert not self.alive, 'Something is wrong, dead bird is dying again'
+

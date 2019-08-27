@@ -113,3 +113,17 @@ def add_shm_val_to_pos(bird):
 
     """
     bird.pos_x += bird.shm['val']
+
+
+def get_random_pipe():
+    """returns a randomly generated pipe"""
+    # y of gap between upper and lower pipe
+    gapY = random.randrange(0, int(BASE_Y * 0.6 - PIPE_GAP_SIZE))
+    gapY += int(BASE_Y * 0.2)
+    pipeHeight = IMAGES['pipe'][0].get_height()
+    pipeX = SCREENWIDTH + 10
+
+    return [
+        {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
+        {'x': pipeX, 'y': gapY + PIPE_GAP_SIZE},  # lower pipe
+    ]

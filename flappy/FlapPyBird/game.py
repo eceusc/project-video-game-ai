@@ -1,4 +1,4 @@
-from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE
+from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE, K_1
 
 from FlapPyBird.bird import Bird
 from FlapPyBird.helpers import *
@@ -19,6 +19,13 @@ class FlappyBirdGame:
 
         global SCREEN, FPSCLOCK
 
+        # initialize some game variables
+        self.upper_pipes = None
+        self.lower_pipes = None
+        self.pipe_vel_x = None
+        self.ai_enabled = False
+
+        # pygame code
         pygame.init()
         FPSCLOCK = pygame.time.Clock()
         SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
@@ -36,6 +43,34 @@ class FlappyBirdGame:
             self.main_game_loop()
             self.game_over()
 
+    def create_pipes(self):
+        """
+        Creates a list of upper and lower pipes and assigns them to the instance of the FlappyBirdGame object.
+
+        Also communicates with the player population and sets the Bird class' pipes as well.
+        Returns: In-place.
+
+        """
+        # get and add pipes to a list
+        new_pipe_1 = get_random_pipe()
+        new_pipe_2 = get_random_pipe()
+
+        # list of upper pipes
+        self.upper_pipes = [
+            {'x': SCREENWIDTH + 200, 'y': new_pipe_1[0]['y']},
+            {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[0]['y']},
+        ]
+
+        # list of lower pipes
+        self.lower_pipes = [
+            {'x': SCREENWIDTH + 200, 'y': new_pipe_1[1]['y']},
+            {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[1]['y']},
+        ]
+
+        # communicate with Bird class
+        Bird.lower_pipes = self.lower_pipes
+        Bird.upper_pipes = self.upper_pipes
+
     def main_game_loop(self):
         """
         Processes the main game logic in the loop.
@@ -43,7 +78,38 @@ class FlappyBirdGame:
         Returns: None.
 
         """
-        pass
+        self.create_pipes()
+
+        while True:
+            # handle input events
+            for event in pygame.event.get():
+                # game exit
+                if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+                    pygame.quit()
+                    sys.exit()
+
+                # flap players on keypress
+                if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+                    self.map_players_to(Bird.flap)
+
+                # enable the ai
+                if event.type == KEYDOWN and event.key == K_1:
+                    self.ai_enabled = not self.ai_enabled
+                    print('AI enabled :', self.ai_enabled)
+
+            # handle the AI logic
+            self.map_players_to(Bird.ai)
+
+            # check for crash
+            self.map_players_to(Bird.check_crash)
+
+            # check if we should disable birds that crashed
+            self.map_players_to(None)
+
+            # score the birds
+            self.map_players_to(Bird.check_score)
+
+            # rotate and move players
 
     def map_players_to(self, func):
         """
