@@ -117,7 +117,6 @@ def main_game(movement_info):
     :param movement_info:
     :return:
 
-    Todo eventually this funciton should work for multiple agents.
     """
     score = playerIndex = loopIter = 0
     playerIndexGen = movement_info['playerIndexGen']

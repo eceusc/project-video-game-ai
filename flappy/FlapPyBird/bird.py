@@ -179,7 +179,6 @@ class Bird:
 
         if abs(self.shm['val']) == 8:
             self.shm['dir'] *= -1
-
         if self.shm['dir'] == 1:
             self.shm['val'] += 1
         else:

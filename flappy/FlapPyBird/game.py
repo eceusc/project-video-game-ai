@@ -45,33 +45,7 @@ class FlappyBirdGame:
             self.main_game_loop()
             self.game_over()
 
-    def create_pipes(self):
-        """
-        Creates a list of upper and lower pipes and assigns them to the instance of the FlappyBirdGame object.
-
-        Also communicates with the player population and sets the Bird class' pipes as well.
-        Returns: In-place.
-
-        """
-        # get and add pipes to a list
-        new_pipe_1 = get_random_pipe()
-        new_pipe_2 = get_random_pipe()
-
-        # list of upper pipes
-        self.upper_pipes = [
-            {'x': SCREENWIDTH + 200, 'y': new_pipe_1[0]['y']},
-            {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[0]['y']},
-        ]
-
-        # list of lower pipes
-        self.lower_pipes = [
-            {'x': SCREENWIDTH + 200, 'y': new_pipe_1[1]['y']},
-            {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[1]['y']},
-        ]
-
-        # communicate with Bird class
-        Bird.lower_pipes = self.lower_pipes
-        Bird.upper_pipes = self.upper_pipes
+    ''' main game logic here'''
 
     def main_game_loop(self):
         """
@@ -124,68 +98,11 @@ class FlappyBirdGame:
             self.show_score()
 
             # render the player
+            self.map_players_to(Bird.render_player_sprite)
 
             # pygame stuff
             FPSCLOCK.tick(FPS)
             pygame.display.update()
-
-
-    def render_background(self):
-        """
-        Draws the background and pipe sprites.
-        Returns:
-
-        """
-        # draw sprites
-        SCREEN.blit(IMAGES['background'], (0, 0))
-
-        for uPipe, lPipe in zip(self.upper_pipes, self.lower_pipes):
-            SCREEN.blit(IMAGES['pipe'][0], (uPipe['x'], uPipe['y']))
-            SCREEN.blit(IMAGES['pipe'][1], (lPipe['x'], lPipe['y']))
-
-        SCREEN.blit(IMAGES['base'], (basex, BASE_Y))
-
-    def move_pipes(self):
-        """
-        Appears to move the pipes left. Will add new ones if they go off-screen.
-        Returns:
-
-        """
-        # move pipes to left
-        for uPipe, lPipe in zip(self.upper_pipes, self.lower_pipes):
-            uPipe['x'] += self.pipe_vel_x
-            lPipe['x'] += self.pipe_vel_x
-
-        # add new pipes as required
-        self.add_new_pipes()
-
-    def add_new_pipes(self):
-        """
-        Adds new pipes if they disappear off-screen.
-        Returns:
-
-        """
-        # add new pipe when first pipe is about to touch left of screen
-        if 0 < self.upper_pipes[0]['x'] < 5:
-            newPipe = get_random_pipe()
-            self.upper_pipes.append(newPipe[0])
-            self.lower_pipes.append(newPipe[1])
-
-        # remove first pipe if its out of the screen
-        if self.upper_pipes[0]['x'] < -IMAGES['pipe'][0].get_width():
-            self.upper_pipes.pop(0)
-            self.lower_pipes.pop(0)
-
-    def map_players_to(self, func):
-        """
-        Maps a given function to the entire player population. May help organize things better. (Bascially a wrapper)/
-        Args:
-            func: function to map over the player population.
-
-        Returns: population after modification. Will not apply changes in-place.
-
-        """
-        return map(func, self.players)
 
     def welcome_screen(self):
         """
@@ -234,6 +151,91 @@ class FlappyBirdGame:
         Note: this will most likely be removed in favor of training without interruptions.
         """
         pass
+
+    ''' helper functions for main functions'''
+
+    def render_background(self):
+        """
+        Draws the background and pipe sprites.
+        Returns:
+
+        """
+        # draw sprites
+        SCREEN.blit(IMAGES['background'], (0, 0))
+
+        for uPipe, lPipe in zip(self.upper_pipes, self.lower_pipes):
+            SCREEN.blit(IMAGES['pipe'][0], (uPipe['x'], uPipe['y']))
+            SCREEN.blit(IMAGES['pipe'][1], (lPipe['x'], lPipe['y']))
+
+    def create_pipes(self):
+        """
+        Creates a list of upper and lower pipes and assigns them to the instance of the FlappyBirdGame object.
+
+        Also communicates with the player population and sets the Bird class' pipes as well.
+        Returns: In-place.
+
+        """
+        # get and add pipes to a list
+        new_pipe_1 = get_random_pipe()
+        new_pipe_2 = get_random_pipe()
+
+        # list of upper pipes
+        self.upper_pipes = [
+            {'x': SCREENWIDTH + 200, 'y': new_pipe_1[0]['y']},
+            {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[0]['y']},
+        ]
+
+        # list of lower pipes
+        self.lower_pipes = [
+            {'x': SCREENWIDTH + 200, 'y': new_pipe_1[1]['y']},
+            {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[1]['y']},
+        ]
+
+        # communicate with Bird class
+        Bird.lower_pipes = self.lower_pipes
+        Bird.upper_pipes = self.upper_pipes
+
+    def move_pipes(self):
+        """
+        Appears to move the pipes left. Will add new ones if they go off-screen.
+        Returns:
+
+        """
+        # move pipes to left
+        for uPipe, lPipe in zip(self.upper_pipes, self.lower_pipes):
+            uPipe['x'] += self.pipe_vel_x
+            lPipe['x'] += self.pipe_vel_x
+
+        # add new pipes as required
+        self.add_new_pipes()
+
+    def add_new_pipes(self):
+        """
+        Adds new pipes if they disappear off-screen.
+        Returns:
+
+        """
+        # add new pipe when first pipe is about to touch left of screen
+        if 0 < self.upper_pipes[0]['x'] < 5:
+            newPipe = get_random_pipe()
+            self.upper_pipes.append(newPipe[0])
+            self.lower_pipes.append(newPipe[1])
+
+        # remove first pipe if its out of the screen
+        if self.upper_pipes[0]['x'] < -IMAGES['pipe'][0].get_width():
+            self.upper_pipes.pop(0)
+            self.lower_pipes.pop(0)
+
+    def map_players_to(self, func):
+        """
+        Maps a given function to the entire player population. May help organize things better. (Bascially a wrapper)/
+        Args:
+            func: function to map over the player population.
+
+        Returns: population after modification. Will not apply changes in-place.
+
+        """
+        return map(func, self.players)
 
     def show_score(self):
         """
