@@ -1,8 +1,7 @@
-import random
 from itertools import cycle
 from pprint import pformat
 
-from FlapPyBird.constants import *
+from FlapPyBird.helpers import *
 
 
 class Bird:
@@ -23,13 +22,12 @@ class Bird:
         'acc_y'           : 1,  # Gravity/Downward acc
         'flapped'         : False,  # True when player flaps
         'ai_enabled'      : False,  # True if AI agent is playing the bird
-        'pos_x'           : SCREENWIDTH // 2,  # starting position, center screen
+        'pos_x'           : SCREENWIDTH * 0.2,  # starting position, left of screen
         'pos_y'           : SCREENHEIGHT // 2,  # starting position, center screen
         'loop_iter'       : 0,  # Used to change player_index after every 5th frame
         'player_index'    : 0,  # index of which player image to render
         'player_index_gen': cycle([0, 1, 2, 1]),  # cycle to animate the images
         'shm'             : {'val': 0, 'dir': 1},  # object to track motion of bird
-        'movement_info'   : None,  # TODO
         'base_x'          : 0,  # coordinate of base???
         'base_shift'      : IMAGES['base'].get_width() - IMAGES['background'].get_width(),  # max shift amount
 
@@ -188,6 +186,16 @@ class Bird:
         self.base_x = -((-self.base_x + 4) % self.base_shift)
         self.simple_harmonic_motion()
 
+    def render_player_sprite(self):
+        """
+        Renders the players sprite to the SCREEN global variable. Is called to render the player on the welcome screen.
+        Returns: None. Blits sprites.
+
+        """
+        global SCREEN
+        SCREEN.blit(IMAGES['player'][self.player_index], (self.pos_x, self.pos_y + self.shm['val']))
+        SCREEN.blit(IMAGES['base'], (self.base_x, BASE_Y))
+
     def check_score(self):
         """
         Checks if the bird passed a pipe. If it did, it increment's that bird's score.
@@ -206,30 +214,3 @@ class Bird:
             pipe_mid_position = pipe['x'] + pipe_width
             if pipe_mid_position <= player_mid_position < pipe_mid_position + 4:
                 self.score += 1
-
-
-def pixel_collision(rect1, rect2, hitmask1, hitmask2):
-    """Checks if two objects collide and not just their rects"""
-    rect = rect1.clip(rect2)
-
-    if rect.width == 0 or rect.height == 0:
-        return False
-
-    x1, y1 = rect.x - rect1.x, rect.y - rect1.y
-    x2, y2 = rect.x - rect2.x, rect.y - rect2.y
-
-    for x in range(rect.width):
-        for y in range(rect.height):
-            if hitmask1[x1 + x][y1 + y] and hitmask2[x2 + x][y2 + y]:
-                return True
-    return False
-
-
-def get_hitmask(image):
-    """returns a hit mask using an image's alpha."""
-    mask = []
-    for x in range(image.get_width()):
-        mask.append([])
-        for y in range(image.get_height()):
-            mask[x].append(bool(image.get_at((x, y))[3]))
-    return mask

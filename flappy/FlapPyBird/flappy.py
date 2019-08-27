@@ -174,7 +174,6 @@ def main_game(movement_info):
                 playerVelY = playerFlapAcc
                 playerFlapped = True
 
-
         # check for crash here
         crashTest = checkCrash({'x': player_x, 'y': player_y, 'index': playerIndex},
                                upperPipes, lowerPipes)
