@@ -196,7 +196,11 @@ class Bird:
 
         """
         global SCREEN
-        SCREEN.blit(IMAGES['player'][self.player_index], (self.pos_x, self.pos_y + self.shm['val']))
+
+        if self.alive:
+            SCREEN.blit(IMAGES['player'][self.player_index], (self.pos_x, self.pos_y + self.shm['val']))
+
+        # todo may be rendering a shit ton of bases
         SCREEN.blit(IMAGES['base'], (self.base_x, BASE_Y))
 
     def check_score(self):
@@ -229,4 +233,5 @@ class Bird:
 
     def handle_crash(self):
         assert not self.alive, 'Something is wrong, dead bird is dying again'
+        self.alive = False
 

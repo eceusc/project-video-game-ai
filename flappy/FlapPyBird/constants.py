@@ -8,7 +8,7 @@ Define constants that are singular numbers here.
 FPS = 30  # (30) framerate. Changing this will mess with game speed.
 SCREENWIDTH = 288  # (288) size of screen. Changing it doesn't scale the game automatically.
 SCREENHEIGHT = 512  # (512) size of screen. Changing it doesn't scale the game automatically.
-PIPE_GAP_SIZE = 200  # (100) gap between upper and lower part of pipe
+PIPE_GAP_SIZE = 100  # (100) gap between upper and lower part of pipe
 BASE_Y = SCREENHEIGHT * 0.79  # (* 0.79) min height for the screen to render pipes.
 
 """
