@@ -1,3 +1,5 @@
+from statistics import mean
+
 from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE, K_1
 
 from FlapPyBird.bird import Bird
@@ -104,12 +106,75 @@ class FlappyBirdGame:
             self.map_players_to(Bird.check_crash)
 
             # check if we should disable birds that crashed
-            self.map_players_to(None)
+            self.map_players_to(Bird.handle_crash)
 
             # score the birds
             self.map_players_to(Bird.check_score)
 
             # rotate and move players
+            self.map_players_to(Bird.animate_player)
+
+            # move the pipes and create new ones if needed
+            self.move_pipes()
+
+            # render the background
+            self.render_background()
+
+            # render the score
+            self.show_score()
+
+            # render the player
+
+            # pygame stuff
+            FPSCLOCK.tick(FPS)
+            pygame.display.update()
+
+
+    def render_background(self):
+        """
+        Draws the background and pipe sprites.
+        Returns:
+
+        """
+        # draw sprites
+        SCREEN.blit(IMAGES['background'], (0, 0))
+
+        for uPipe, lPipe in zip(self.upper_pipes, self.lower_pipes):
+            SCREEN.blit(IMAGES['pipe'][0], (uPipe['x'], uPipe['y']))
+            SCREEN.blit(IMAGES['pipe'][1], (lPipe['x'], lPipe['y']))
+
+        SCREEN.blit(IMAGES['base'], (basex, BASE_Y))
+
+    def move_pipes(self):
+        """
+        Appears to move the pipes left. Will add new ones if they go off-screen.
+        Returns:
+
+        """
+        # move pipes to left
+        for uPipe, lPipe in zip(self.upper_pipes, self.lower_pipes):
+            uPipe['x'] += self.pipe_vel_x
+            lPipe['x'] += self.pipe_vel_x
+
+        # add new pipes as required
+        self.add_new_pipes()
+
+    def add_new_pipes(self):
+        """
+        Adds new pipes if they disappear off-screen.
+        Returns:
+
+        """
+        # add new pipe when first pipe is about to touch left of screen
+        if 0 < self.upper_pipes[0]['x'] < 5:
+            newPipe = get_random_pipe()
+            self.upper_pipes.append(newPipe[0])
+            self.lower_pipes.append(newPipe[1])
+
+        # remove first pipe if its out of the screen
+        if self.upper_pipes[0]['x'] < -IMAGES['pipe'][0].get_width():
+            self.upper_pipes.pop(0)
+            self.lower_pipes.pop(0)
 
     def map_players_to(self, func):
         """
@@ -149,7 +214,7 @@ class FlappyBirdGame:
                     break
 
             # handle animating the players
-            self.map_players_to(Bird.animate_player)
+            self.map_players_to(Bird.animate_player_welcome_screen)
 
             # handle rendering player sprites
             self.map_players_to(Bird.render_player_sprite)
@@ -169,3 +234,24 @@ class FlappyBirdGame:
         Note: this will most likely be removed in favor of training without interruptions.
         """
         pass
+
+    def show_score(self):
+        """
+        Renders the score to the game screen.
+        Returns:
+
+        """
+        # find the mean score of the population
+        score = mean([x.score for x in self.players])
+
+        scoreDigits = [int(x) for x in list(str(score))]
+        totalWidth = 0  # total width of all numbers to be printed
+
+        for digit in scoreDigits:
+            totalWidth += IMAGES['numbers'][digit].get_width()
+
+        Xoffset = (SCREENWIDTH - totalWidth) / 2
+
+        for digit in scoreDigits:
+            SCREEN.blit(IMAGES['numbers'][digit], (Xoffset, SCREENHEIGHT * 0.1))
+            Xoffset += IMAGES['numbers'][digit].get_width()

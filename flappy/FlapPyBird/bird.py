@@ -95,6 +95,10 @@ class Bird:
         Returns: In-place.
 
         """
+
+        if not self.alive:
+            return
+
         if self.pos_y > -2 * IMAGES['player'][0].get_height():
             self.vel_y = self.acc_flap
             self.flapped = True
@@ -182,6 +186,46 @@ class Bird:
             self.shm['val'] -= 1
 
     def animate_player(self):
+        """
+        Runs the player sprite through different stages of animation.
+        Returns:
+
+        """
+        # playerIndex basex change
+        if (self.loop_iter + 1) % 3 == 0:
+            self.player_index = next(self.player_index_gen)
+        self.loopIter = (self.loop_iter + 1) % 30
+        self.base_x = -((-self.base_x + 100) % self.base_shift)
+
+        # rotate the player
+        if self.rot > -90:
+            self.rot -= self.rot_vel
+
+        # rotation has a threshold
+        self.visible_rot = self.rot_thresh
+        if self.rot <= self.rot_thresh:
+            self.visible_rot = self.rot
+
+        # player's movement
+        if self.vel_y < self.max_vel_y and not self.flapped:
+            self.vel_y += self.acc_y
+        if self.flapped:
+            self.flapped = False
+            # more rotation to cover the threshold (calculated in visible rotation)
+            self.rot = 45
+
+        player_height = IMAGES['player'][self.player_index].get_height()
+        self.pos_y += min(self.vel_y, BASE_Y - self.pos_y - player_height)
+
+    def animate_player_welcome_screen(self):
+        """
+        Runs the player sprite through different stages of animation.
+        Returns:
+
+        """
+        if not self.alive:
+            return
+
         # adjust playery, playerIndex, basex
         if (self.loop_iter + 1) % 5 == 0:
             self.playerIndex = next(self.player_index_gen)
@@ -197,11 +241,16 @@ class Bird:
         """
         global SCREEN
 
-        if self.alive:
-            SCREEN.blit(IMAGES['player'][self.player_index], (self.pos_x, self.pos_y + self.shm['val']))
+        if not self.alive:
+            return
+
+        SCREEN.blit(IMAGES['player'][self.player_index], (self.pos_x, self.pos_y + self.shm['val']))
 
         # todo may be rendering a shit ton of bases
         SCREEN.blit(IMAGES['base'], (self.base_x, BASE_Y))
+
+        playerSurface = pygame.transform.rotate(IMAGES['player'][self.player_index], self.visible_rot)
+        SCREEN.blit(playerSurface, (self.pos_x, self.pos_y))
 
     def check_score(self):
         """
@@ -228,10 +277,12 @@ class Bird:
         Returns:
 
         """
+        if not self.alive:
+            return
+
         # check if bird is dead. Dead ai doesn't work.
         pass
 
     def handle_crash(self):
         assert not self.alive, 'Something is wrong, dead bird is dying again'
         self.alive = False
-
