@@ -169,6 +169,12 @@ def main_game(movement_info):
                 enabled = not enabled
                 print('AI enabled :', enabled)
 
+        if enabled and player_y > SCREENHEIGHT / 2.2:
+            if player_y > -2 * IMAGES['player'][0].get_height():
+                playerVelY = playerFlapAcc
+                playerFlapped = True
+
+
         # check for crash here
         crashTest = checkCrash({'x': player_x, 'y': player_y, 'index': playerIndex},
                                upperPipes, lowerPipes)

@@ -12,6 +12,7 @@ class Bird:
     num_birds = 0
     ''' stores default values for all the fields'''
     default_player_values = {
+        'score'           : 0,  # Number of pipes passed
         'vel_y'           : -9,  # Velocity along Y axis
         'max_vel_y'       : 10,  # Max descend speed
         'min_vel_y'       : -8,  # Max ascend speed
@@ -29,6 +30,9 @@ class Bird:
         'player_index_gen': cycle([0, 1, 2, 1]),  # cycle to animate the images
         'shm'             : {'val': 0, 'dir': 1},  # object to track motion of bird
         'movement_info'   : None,  # TODO
+        'base_x'          : 0,  # coordinate of base???
+        'base_shift'      : IMAGES['base'].get_width() - IMAGES['background'].get_width(),  # max shift amount
+
     }
 
     lower_pipes = None
@@ -86,6 +90,11 @@ class Bird:
         return pformat(vars(self))
 
     def flap(self):
+        """
+        Flaps the bird, if the bird hasn't already flapped.
+        Returns: In-place.
+
+        """
         if self.pos_y > -2 * IMAGES['player'][0].get_height():
             self.vel_y = self.acc_flap
             self.flapped = True
@@ -94,7 +103,7 @@ class Bird:
     def random_height():
         """
         Finds a random spawn height for the bird. Automatically takes screen height into consideration.
-        :return: As above.
+        Returns: [crash_pipe, crash_ground].
         """
         # will pick a number in this interval, so that the bird doesnt spawn absolutely at the edges of the screen.
         interval = [0.2, 0.8]
@@ -152,9 +161,10 @@ class Bird:
 
     def simple_harmonic_motion(self):
         """
-        Oscillates value of player SHM betweeen -8, 8.
+        Oscillates value of player SHM between -8, 8.
         Returns: None, in-place modification of self.shm.
 
+        Notes:
             self.shm:
             {
                 'val' : value,
@@ -173,12 +183,29 @@ class Bird:
     def animate_player(self):
         # adjust playery, playerIndex, basex
         if (self.loop_iter + 1) % 5 == 0:
-            playerIndex = next(self.player_index_gen)
-        loopIter = (self.loop_iter + 1) % 30
-        basex = -((-basex + 4) % baseShift)
-        playerShm(playerShmVals)
+            self.playerIndex = next(self.player_index_gen)
+        self.loopIter = (self.loop_iter + 1) % 30
+        self.base_x = -((-self.base_x + 4) % self.base_shift)
+        self.simple_harmonic_motion()
 
-        pass
+    def check_score(self):
+        """
+        Checks if the bird passed a pipe. If it did, it increment's that bird's score.
+        Returns: In-place.
+
+        """
+        assert Bird.upper_pipes is not None and Bird.lower_pipes is not None, 'Set a reference to the pipes after ' \
+                                                                              'initializing the first bird'
+
+        player_width = IMAGES['player'][0].get_width() / 2
+        player_mid_position = self.pos_x + player_width
+
+        pipe_width = IMAGES['pipe'][0].get_width() / 2
+
+        for pipe in self.upper_pipes:
+            pipe_mid_position = pipe['x'] + pipe_width
+            if pipe_mid_position <= player_mid_position < pipe_mid_position + 4:
+                self.score += 1
 
 
 def pixel_collision(rect1, rect2, hitmask1, hitmask2):
@@ -199,7 +226,7 @@ def pixel_collision(rect1, rect2, hitmask1, hitmask2):
 
 
 def get_hitmask(image):
-    """returns a hitmask using an image's alpha."""
+    """returns a hit mask using an image's alpha."""
     mask = []
     for x in range(image.get_width()):
         mask.append([])
