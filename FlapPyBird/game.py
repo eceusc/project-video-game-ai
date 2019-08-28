@@ -2,9 +2,8 @@ from statistics import mean
 
 from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE, K_1
 
-from .bird import Bird
-from .constants import *
-from .helpers import *
+from FlapPyBird.bird import Bird
+from FlapPyBird.helpers import *
 
 
 class FlappyBirdGame:
@@ -92,6 +91,10 @@ class FlappyBirdGame:
 
             # check if we should disable birds that crashed
             self.map_players_to(Bird.handle_crash)
+
+            # if all birds are dead then end the game
+            if all(self.map_players_to(lambda x: x.alive)):
+                return
 
             # score the birds
             self.map_players_to(Bird.check_score)
@@ -267,3 +270,6 @@ class FlappyBirdGame:
         for digit in scoreDigits:
             SCREEN.blit(IMAGES['numbers'][digit], (Xoffset, SCREENHEIGHT * 0.1))
             Xoffset += IMAGES['numbers'][digit].get_width()
+
+
+instance = FlappyBirdGame()

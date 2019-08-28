@@ -3,7 +3,7 @@ from itertools import cycle
 
 from pygame.locals import *
 
-from .constants import *
+from FlapPyBird.constants import *
 
 
 # noinspection PyGlobalUndefined

@@ -296,3 +296,6 @@ class Bird:
     def handle_crash(self):
         assert not self.alive, 'Something is wrong, dead bird is dying again'
         self.alive = False
+
+    def is_alive(self):
+        return self.alive
