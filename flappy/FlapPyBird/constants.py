@@ -105,3 +105,4 @@ PIPES_LIST = (
     'assets/sprites/pipe-green.png',
     'assets/sprites/pipe-red.png',
 )
+

@@ -7,6 +7,7 @@ from FlapPyBird.helpers import *
 
 
 class FlappyBirdGame:
+    welcome = True
     def __init__(self):
         """
             Sets up and runs the game.
@@ -24,13 +25,15 @@ class FlappyBirdGame:
         # initialize some game variables
         self.upper_pipes = None
         self.lower_pipes = None
-        self.pipe_vel_x = None
+        self.pipe_vel_x = -4
         self.ai_enabled = False
 
         # pygame code
         pygame.init()
         FPSCLOCK = pygame.time.Clock()
         SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
+        # send the screen to Bird for rendering
+        Bird.SCREEN = SCREEN
 
         pygame.display.set_caption('Flappy Bird')
 
@@ -42,6 +45,7 @@ class FlappyBirdGame:
             randomize_assets()
 
             self.welcome_screen()
+            FlappyBirdGame.welcome = False
             self.main_game_loop()
             self.game_over()
 
@@ -54,6 +58,8 @@ class FlappyBirdGame:
         Returns: None.
 
         """
+        # set the base shift
+        self.base_shift = IMAGES['base'].get_width() - IMAGES['background'].get_width()
         self.create_pipes()
 
         while True:
@@ -75,7 +81,7 @@ class FlappyBirdGame:
 
             # handle the AI logic
             self.map_players_to(Bird.ai)
-
+            print('mapped to ai')
             # check for crash
             self.map_players_to(Bird.check_crash)
 
@@ -120,7 +126,6 @@ class FlappyBirdGame:
         while True:
             # handle events, quitting and starting
             for event in pygame.event.get():
-
                 if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                     pygame.quit()
                     sys.exit()
@@ -128,7 +133,7 @@ class FlappyBirdGame:
                 if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
                     self.map_players_to(add_shm_val_to_pos)
                     # in this case, start the game
-                    break
+                    return
 
             # handle animating the players
             self.map_players_to(Bird.animate_player_welcome_screen)
@@ -235,7 +240,7 @@ class FlappyBirdGame:
         Returns: population after modification. Will not apply changes in-place.
 
         """
-        return map(func, self.players)
+        return list((map(func, self.players)))
 
     def show_score(self):
         """
@@ -257,3 +262,7 @@ class FlappyBirdGame:
         for digit in scoreDigits:
             SCREEN.blit(IMAGES['numbers'][digit], (Xoffset, SCREENHEIGHT * 0.1))
             Xoffset += IMAGES['numbers'][digit].get_width()
+
+
+
+instance = FlappyBirdGame()

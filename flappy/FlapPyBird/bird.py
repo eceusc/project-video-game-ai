@@ -1,6 +1,7 @@
 from itertools import cycle
 from pprint import pformat
 
+from FlapPyBird.game import FlappyBirdGame
 from FlapPyBird.helpers import *
 
 
@@ -29,7 +30,7 @@ class Bird:
         'player_index_gen': cycle([0, 1, 2, 1]),  # cycle to animate the images
         'shm'             : {'val': 0, 'dir': 1},  # object to track motion of bird
         'base_x'          : 0,  # coordinate of base???
-        'base_shift'      : IMAGES['base'].get_width() - IMAGES['background'].get_width(),  # max shift amount
+        'base_shift'      : -1,  # max shift amount
         'crash_test'      : (True, False),  # helps track if the bird crashed, and how
         'alive'           : True,  # helps track if the bird is alive in the population
 
@@ -232,24 +233,34 @@ class Bird:
         self.base_x = -((-self.base_x + 4) % self.base_shift)
         self.simple_harmonic_motion()
 
+    def render_player_sprite_no_transform(self):
+        """
+        Renders the players sprite to the SCREEN global variable. Is called to render the player on the welcome screen.
+        Returns: None. Blits sprites.
+
+        """
+
+        global SCREEN
+
+        if not self.alive:
+            return
+
+        Bird.SCREEN.blit(IMAGES['player'][self.player_index], (self.pos_x, self.pos_y + self.shm['val']))
+
+        # todo may be rendering a shit ton of bases
+        Bird.SCREEN.blit(IMAGES['base'], (self.base_x, BASE_Y))
+
     def render_player_sprite(self):
         """
         Renders the players sprite to the SCREEN global variable. Is called to render the player on the welcome screen.
         Returns: None. Blits sprites.
 
         """
-        global SCREEN
 
-        if not self.alive:
-            return
-
-        SCREEN.blit(IMAGES['player'][self.player_index], (self.pos_x, self.pos_y + self.shm['val']))
-
-        # todo may be rendering a shit ton of bases
-        SCREEN.blit(IMAGES['base'], (self.base_x, BASE_Y))
-
+        # if in the game, we can start doing the rotations
+        self.render_player_sprite_no_transform()
         playerSurface = pygame.transform.rotate(IMAGES['player'][self.player_index], self.visible_rot)
-        SCREEN.blit(playerSurface, (self.pos_x, self.pos_y))
+        Bird.SCREEN.blit(playerSurface, (self.pos_x, self.pos_y))
 
     def check_score(self):
         """
@@ -271,6 +282,7 @@ class Bird:
                 self.score += 1
 
     def ai(self):
+        print(self)
         """
         This function is called if the AI is enabled every game tick.
         Returns:
