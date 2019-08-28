@@ -44,6 +44,9 @@ class FlappyBirdGame:
             # select random assets
             randomize_assets()
 
+            # generate hitmasks
+            populate_hitmasks()
+
             self.welcome_screen()
             FlappyBirdGame.welcome = False
             self.main_game_loop()
@@ -139,7 +142,7 @@ class FlappyBirdGame:
             self.map_players_to(Bird.animate_player_welcome_screen)
 
             # handle rendering player sprites
-            self.map_players_to(Bird.render_player_sprite)
+            self.map_players_to(Bird.render_player_sprite_no_transform)
 
             # handle rendering the background and message sprites
             SCREEN.blit(IMAGES['background'], (0, 0))

@@ -1,7 +1,6 @@
 from itertools import cycle
 from pprint import pformat
 
-from FlapPyBird.game import FlappyBirdGame
 from FlapPyBird.helpers import *
 
 
