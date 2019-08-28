@@ -6,9 +6,13 @@ from FlapPyBird.bird import Bird
 from FlapPyBird.helpers import *
 
 
+def debugger(param):
+    return
+    print([x.alive for x in param['self'].players])
+
+
 class FlappyBirdGame:
-    welcome = True
-    population_size = 2
+    population_size = 20
 
     def __init__(self):
         """
@@ -29,7 +33,7 @@ class FlappyBirdGame:
         self.lower_pipes = None
         self.pipe_vel_x = -4
         self.ai_enabled = False
-        self.players = None # todo possibly init here
+        self.players = None  # todo possibly init here
 
         # pygame code
         pygame.init()
@@ -50,10 +54,12 @@ class FlappyBirdGame:
             # generate hitmasks
             populate_hitmasks()
 
-            self.welcome_screen()
-            FlappyBirdGame.welcome = False
+            # generate players
+            self.players = [Bird() for _ in range(FlappyBirdGame.population_size)]
+
+            # self.welcome_screen()
             self.main_game_loop()
-            self.game_over()
+            # self.game_over()
 
     ''' main game logic here'''
 
@@ -69,6 +75,9 @@ class FlappyBirdGame:
         self.create_pipes()
 
         while True:
+
+            debugger(locals())
+
             # handle input events
             for event in pygame.event.get():
                 # game exit
@@ -95,7 +104,7 @@ class FlappyBirdGame:
             self.map_players_to(Bird.handle_crash)
 
             # if all birds are dead then end the game
-            if not all(self.map_players_to(lambda x: x.alive)):
+            if all(self.map_players_to(lambda x: not x.alive)):
                 return
 
             # score the birds
@@ -129,7 +138,6 @@ class FlappyBirdGame:
         """
         # initialize player here
 
-        self.players = [Bird() for _ in range(FlappyBirdGame.population_size)]
 
         message_x = int(SCREENWIDTH - IMAGES['message'].get_width()) / 2
         message_y = int(SCREENHEIGHT * 0.12)
@@ -259,18 +267,31 @@ class FlappyBirdGame:
 
         """
         # find the mean score of the population
-        score = mean([x.score for x in self.players])
-        scoreDigits = [int(x) for x in list(str(score))]
-        totalWidth = 0  # total width of all numbers to be printed
+        score = max([x.score for x in self.players])
 
-        for digit in scoreDigits:
-            totalWidth += IMAGES['numbers'][digit].get_width()
+        score_digits = [int(x) for x in list(str(score))]
+        total_width = 0  # total width of all numbers to be printed
 
-        Xoffset = (SCREENWIDTH - totalWidth) / 2
+        for digit in score_digits:
+            total_width += IMAGES['numbers'][digit].get_width()
 
-        for digit in scoreDigits:
-            SCREEN.blit(IMAGES['numbers'][digit], (Xoffset, SCREENHEIGHT * 0.1))
-            Xoffset += IMAGES['numbers'][digit].get_width()
+        x_offset = (SCREENWIDTH - total_width) / 2
+
+        for digit in score_digits:
+            SCREEN.blit(IMAGES['numbers'][digit], (x_offset, SCREENHEIGHT * 0.1))
+            x_offset += IMAGES['numbers'][digit].get_width()
 
 
+    ''' ai logic here'''
+
+    def map_population_to_genome(self, genome):
+        """
+        Takes in a population of birds and maps it to a genome.
+        Args:
+            genome:
+
+        Returns:
+
+        """
+        pass
 instance = FlappyBirdGame()

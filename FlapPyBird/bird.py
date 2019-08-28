@@ -1,5 +1,5 @@
 from itertools import cycle
-from pprint import pformat
+from pprint import pformat, pprint
 
 from FlapPyBird.helpers import *
 
@@ -107,7 +107,7 @@ class Bird:
         Returns: [crash_pipe, crash_ground].
         """
         # will pick a number in this interval, so that the bird doesnt spawn absolutely at the edges of the screen.
-        interval = [0.3, 0.6]
+        interval = [0.2, 0.8]
         return int(SCREENHEIGHT * random.uniform(*interval))
 
     def check_crash(self):
@@ -246,7 +246,8 @@ class Bird:
         Returns: None. Blits sprites.
 
         """
-
+        if not self.alive:
+            return
         # if in the game, we can start doing the rotations
 
         player_surface = pygame.transform.rotate(IMAGES['player'][self.player_index], self.visible_rot)
@@ -275,6 +276,17 @@ class Bird:
             if pipe_mid_position <= player_mid_position < pipe_mid_position + 4:
                 self.score += 1
 
+    def handle_crash(self):
+        """
+        Handles crash condition if a bird dies.
+        :return:
+        """
+        if self.crash_test[0]:
+            # assert self.alive, 'Something is wrong, dead bird is dying again'
+            self.alive = False
+
+    ''' ai helper methods here'''
+
     def ai(self):
         """
         This function is called if the AI is enabled every game tick.
@@ -284,11 +296,28 @@ class Bird:
         if not self.alive:
             return
 
-    def handle_crash(self):
+
+
+    def get_inputs(self):
         """
-        Handles crash condition if a bird dies.
-        :return:
+        Gets inputs to run the ai.
+        :return: dictionary of named inputs. Use .values() to get input values.
+        If the bird is dead, then no inputs are received.
         """
-        if self.crash_test[0]:
-            assert self.alive, 'Something is wrong, dead bird is dying again'
-            self.alive = False
+        if not self.alive:
+            return None
+
+        # get height of player
+        height = self.pos_y
+
+        # get distance to next pipe
+        distance_to_pipe = Bird.upper_pipes[0]['x'] - self.pos_x
+
+        if distance_to_pipe < 0:
+            print('distance to pipe < 0:', distance_to_pipe)
+            distance_to_pipe = 0
+
+        # get pipe gap
+        gap = PIPE_GAP_SIZE
+
+        return {'height': height, 'distance_to_pipe': distance_to_pipe, 'gap': gap}
