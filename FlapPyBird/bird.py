@@ -33,7 +33,7 @@ class Bird:
         'crash_test'      : (True, False),  # helps track if the bird crashed, and how
         'alive'           : True,  # helps track if the bird is alive in the population
 
-    }
+        }
 
     lower_pipes = None
     upper_pipes = None
@@ -96,9 +96,6 @@ class Bird:
 
         """
 
-        if not self.alive:
-            return
-
         if self.pos_y > -2 * IMAGES['player'][0].get_height():
             self.vel_y = self.acc_flap
             self.flapped = True
@@ -110,7 +107,7 @@ class Bird:
         Returns: [crash_pipe, crash_ground].
         """
         # will pick a number in this interval, so that the bird doesnt spawn absolutely at the edges of the screen.
-        interval = [0.2, 0.8]
+        interval = [0.3, 0.6]
         return int(SCREENHEIGHT * random.uniform(*interval))
 
     def check_crash(self):
@@ -138,30 +135,32 @@ class Bird:
         if pos_y + player_height >= BASE_Y - 1:
             self.crash_test = True, True
             return
+
         else:
-            playerRect = pygame.Rect(pos_x, pos_y, player_width, player_height)
+            player_rect = pygame.Rect(pos_x, pos_y, player_width, player_height)
 
             pipe_width = IMAGES['pipe'][0].get_width()
             pipe_height = IMAGES['pipe'][0].get_height()
 
             for uPipe, lPipe in zip(upper_pipes, lower_pipes):
                 # upper and lower pipe rects
-                uPipeRect = pygame.Rect(uPipe['x'], uPipe['y'], pipe_width, pipe_height)
-                lPipeRect = pygame.Rect(lPipe['x'], lPipe['y'], pipe_width, pipe_height)
+                u_pipe_rect = pygame.Rect(uPipe['x'], uPipe['y'], pipe_width, pipe_height)
+                l_pipe_rect = pygame.Rect(lPipe['x'], lPipe['y'], pipe_width, pipe_height)
 
                 # player and upper/lower pipe hitmasks
-                pHitMask = HIT_MASKS['player'][player_index]
-                uHitmask = HIT_MASKS['pipe'][0]
-                lHitmask = HIT_MASKS['pipe'][1]
+                p_hit_mask = HIT_MASKS['player'][player_index]
+                u_hitmask = HIT_MASKS['pipe'][0]
+                l_hitmask = HIT_MASKS['pipe'][1]
 
                 # if bird collided with upipe or lpipe
-                uCollide = pixel_collision(playerRect, uPipeRect, pHitMask, uHitmask)
-                lCollide = pixel_collision(playerRect, lPipeRect, pHitMask, lHitmask)
+                u_collide = pixel_collision(player_rect, u_pipe_rect, p_hit_mask, u_hitmask)
+                l_collide = pixel_collision(player_rect, l_pipe_rect, p_hit_mask, l_hitmask)
 
-                if uCollide or lCollide:
+                if u_collide or l_collide:
                     self.crash_test = True, False
                     return
 
+        self.crash_test = False, False
         return
 
     def simple_harmonic_motion(self):
@@ -222,9 +221,6 @@ class Bird:
         Returns:
 
         """
-        if not self.alive:
-            return
-
         # adjust playery, playerIndex, basex
         if (self.loop_iter + 1) % 5 == 0:
             self.playerIndex = next(self.player_index_gen)
@@ -239,11 +235,6 @@ class Bird:
 
         """
 
-        global SCREEN
-
-        if not self.alive:
-            return
-
         Bird.SCREEN.blit(IMAGES['player'][self.player_index], (self.pos_x, self.pos_y + self.shm['val']))
 
         # todo may be rendering a shit ton of bases
@@ -257,9 +248,10 @@ class Bird:
         """
 
         # if in the game, we can start doing the rotations
-        self.render_player_sprite_no_transform()
-        playerSurface = pygame.transform.rotate(IMAGES['player'][self.player_index], self.visible_rot)
-        Bird.SCREEN.blit(playerSurface, (self.pos_x, self.pos_y))
+
+        player_surface = pygame.transform.rotate(IMAGES['player'][self.player_index], self.visible_rot)
+        Bird.SCREEN.blit(player_surface, (self.pos_x, self.pos_y))
+        Bird.SCREEN.blit(IMAGES['base'], (self.base_x, BASE_Y))
 
     def check_score(self):
         """
@@ -269,6 +261,9 @@ class Bird:
         """
         assert Bird.upper_pipes is not None and Bird.lower_pipes is not None, 'Set a reference to the pipes after ' \
                                                                               'initializing the first bird'
+
+        if not self.alive:
+            return
 
         player_width = IMAGES['player'][0].get_width() / 2
         player_mid_position = self.pos_x + player_width
@@ -281,7 +276,6 @@ class Bird:
                 self.score += 1
 
     def ai(self):
-        print(self)
         """
         This function is called if the AI is enabled every game tick.
         Returns:
@@ -290,12 +284,11 @@ class Bird:
         if not self.alive:
             return
 
-        # check if bird is dead. Dead ai doesn't work.
-        pass
-
     def handle_crash(self):
-        assert not self.alive, 'Something is wrong, dead bird is dying again'
-        self.alive = False
-
-    def is_alive(self):
-        return self.alive
+        """
+        Handles crash condition if a bird dies.
+        :return:
+        """
+        if self.crash_test[0]:
+            assert self.alive, 'Something is wrong, dead bird is dying again'
+            self.alive = False

@@ -8,6 +8,7 @@ from FlapPyBird.helpers import *
 
 class FlappyBirdGame:
     welcome = True
+    population_size = 2
 
     def __init__(self):
         """
@@ -28,6 +29,7 @@ class FlappyBirdGame:
         self.lower_pipes = None
         self.pipe_vel_x = -4
         self.ai_enabled = False
+        self.players = None # todo possibly init here
 
         # pygame code
         pygame.init()
@@ -85,7 +87,7 @@ class FlappyBirdGame:
 
             # handle the AI logic
             self.map_players_to(Bird.ai)
-            print('mapped to ai')
+
             # check for crash
             self.map_players_to(Bird.check_crash)
 
@@ -93,7 +95,7 @@ class FlappyBirdGame:
             self.map_players_to(Bird.handle_crash)
 
             # if all birds are dead then end the game
-            if all(self.map_players_to(lambda x: x.alive)):
+            if not all(self.map_players_to(lambda x: x.alive)):
                 return
 
             # score the birds
@@ -127,7 +129,7 @@ class FlappyBirdGame:
         """
         # initialize player here
 
-        self.players = [Bird()]
+        self.players = [Bird() for _ in range(FlappyBirdGame.population_size)]
 
         message_x = int(SCREENWIDTH - IMAGES['message'].get_width()) / 2
         message_y = int(SCREENHEIGHT * 0.12)
@@ -258,7 +260,6 @@ class FlappyBirdGame:
         """
         # find the mean score of the population
         score = mean([x.score for x in self.players])
-
         scoreDigits = [int(x) for x in list(str(score))]
         totalWidth = 0  # total width of all numbers to be printed
 
