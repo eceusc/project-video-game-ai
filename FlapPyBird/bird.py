@@ -16,13 +16,13 @@ class Bird:
     ''' stores default values for all the fields'''
     default_player_values = {
         'score'           : 0,  # Number of pipes passed
-        'vel_y'           : -9,  # Velocity along Y axis
-        'max_vel_y'       : 10,  # Max descend speed
-        'min_vel_y'       : -8,  # Max ascend speed
+        'vel_y'           : 0,  # Velocity along Y axis
+        'max_vel_y'       : 16,  # Max descend speed
+        'min_vel_y'       : -10,  # Max ascend speed
         'rot'             : 45,  # Rotation
         'rot_vel'         : 3,  # Rotation velocity
         'rot_thresh'      : 20,  # Rotation threshold
-        'acc_flap'        : -9,  # Speed on flapping
+        'acc_flap'        : -11,  # Speed on flapping
         'acc_y'           : 1,  # Gravity/Downward acc
         'flapped'         : False,  # True when player flaps
         'ai_enabled'      : False,  # True if AI agent is playing the bird
@@ -36,7 +36,6 @@ class Bird:
         'base_shift'      : -1,  # max shift amount
         'crash_test'      : (True, False),  # helps track if the bird crashed, and how
         'alive'           : True,  # helps track if the bird is alive in the population
-
     }
 
     lower_pipes = None
@@ -92,7 +91,7 @@ class Bird:
         Bird.num_birds += 1
 
         # remember time of birth
-        self.birth_time = time()
+        self.birth_time = 0
 
     def __repr__(self):
         """
@@ -311,9 +310,16 @@ class Bird:
         """
         if not self.alive:
             return
+
         assert hasattr(self, 'net'), "Bird has ai enabled but does not appear to have any agents"
 
-        activation = self.net.activate(self.get_inputs().values())[0]
+        self.birth_time += 1
+
+        activation = self.net.activate(self.get_inputs())[0]
+
+        # if activation > 1e3:
+        #     print('unusually high activation of', activation)
+
         if activation > 0.5:
             self.flap()
 
@@ -341,22 +347,43 @@ class Bird:
         if not self.alive:
             return None
 
-        # get height of player
-        height = self.pos_y
+        # inputs = [self.get_next_pipe_midpoint() - self.pos_y] + self.distance_to_pipe()
 
-        # get distance to next pipe
-        distance_to_pipe = Bird.upper_pipes[0]['x'] - self.pos_x
+        inputs = list(self.midpoint_of_pipes()) + list(self.distance_to_pipe()) + [self.pos_y, self.vel_y,
+                                                                                   self.acc_flap, self.rot]
 
-        if distance_to_pipe < 0:
-            # print('distance to pipe < 0:', distance_to_pipe)
-            distance_to_pipe = 0
+        inputs = list(self.midpoint_of_pipes()) + [self.pos_y, self.vel_y, self.rot]
 
-        # get pipe gap
-        gap = PIPE_GAP_SIZE
+        # inputs = list(self.midpoint_of_pipes()) + [self.pos_y]
+        inputs[0] -= self.pos_y
+        inputs[0] -= self.pos_y
+        return inputs
 
-        # get pipe lip
-        pipe_y = Bird.lower_pipes[0]['y']
-        return {'height': height, 'distance_to_pipe': distance_to_pipe, 'gap': gap, 'pipe_y':pipe_y}
+    def distance_to_pipe(self):
+        return self.upper_pipes[0]['x'] - self.pos_x, self.upper_pipes[1]['x'] - self.pos_x
+
+    def midpoint_of_pipes(self):
+        return Bird.lower_pipes[0]['y'] - 0.5 * PIPE_GAP_SIZE, Bird.lower_pipes[1]['y'] - 0.5 * PIPE_GAP_SIZE
+
+    def get_next_pipe_index(self):
+        up = Bird.upper_pipes
+
+        dist = [x['x'] - self.pos_x for x in up]
+
+        pipe_index = 0
+        while dist[pipe_index] < 0:
+            pipe_index += 1
+
+        return pipe_index
+
+    def get_next_pipe_midpoint(self):
+        # find distances to all pipes
+        up = Bird.upper_pipes
+
+        pipe_index = self.get_next_pipe_index()
+
+        # get midpoint of the pipes
+        return Bird.lower_pipes[pipe_index]['y'] - 0.5 * PIPE_GAP_SIZE
 
     def get_fitness(self):
         """
@@ -364,6 +391,7 @@ class Bird:
         Returns: real-valued number representing fitness.
 
         """
-
-        time_alive = (time() - self.birth_time)
-        return time_alive + 2 * self.score
+        score = self.score - (abs(self.distance_to_pipe()[0])) * 0.3
+        score = self.score + 1.5 * 1e-2 * self.birth_time - (abs(self.distance_to_pipe()[0])) * 0.06
+        score = self.score + 1.5 * 1e-2 * self.birth_time
+        return score
