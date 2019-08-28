@@ -2,12 +2,14 @@ from statistics import mean
 
 from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE, K_1
 
-from FlapPyBird.bird import Bird
-from FlapPyBird.helpers import *
+from .bird import Bird
+from .constants import *
+from .helpers import *
 
 
 class FlappyBirdGame:
     welcome = True
+
     def __init__(self):
         """
             Sets up and runs the game.
@@ -191,13 +193,13 @@ class FlappyBirdGame:
         self.upper_pipes = [
             {'x': SCREENWIDTH + 200, 'y': new_pipe_1[0]['y']},
             {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[0]['y']},
-        ]
+            ]
 
         # list of lower pipes
         self.lower_pipes = [
             {'x': SCREENWIDTH + 200, 'y': new_pipe_1[1]['y']},
             {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[1]['y']},
-        ]
+            ]
 
         # communicate with Bird class
         Bird.lower_pipes = self.lower_pipes
@@ -265,7 +267,3 @@ class FlappyBirdGame:
         for digit in scoreDigits:
             SCREEN.blit(IMAGES['numbers'][digit], (Xoffset, SCREENHEIGHT * 0.1))
             Xoffset += IMAGES['numbers'][digit].get_width()
-
-
-
-instance = FlappyBirdGame()

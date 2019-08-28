@@ -1,10 +1,9 @@
 import random
 from itertools import cycle
-from pprint import pprint
 
 from pygame.locals import *
 
-from FlapPyBird.constants import *
+from .constants import *
 
 
 # noinspection PyGlobalUndefined
@@ -29,7 +28,7 @@ def main():
             pygame.image.load(PLAYERS_LIST[randPlayer][0]).convert_alpha(),
             pygame.image.load(PLAYERS_LIST[randPlayer][1]).convert_alpha(),
             pygame.image.load(PLAYERS_LIST[randPlayer][2]).convert_alpha(),
-        )
+            )
 
         # select random pipe sprites
         pipe_index = random.randint(0, len(PIPES_LIST) - 1)
@@ -38,20 +37,20 @@ def main():
             pygame.transform.flip(
                 pygame.image.load(PIPES_LIST[pipe_index]).convert_alpha(), False, True),
             pygame.image.load(PIPES_LIST[pipe_index]).convert_alpha(),
-        )
+            )
 
         # hit mask for pipes
         HIT_MASKS['pipe'] = (
             get_hitmask(IMAGES['pipe'][0]),
             get_hitmask(IMAGES['pipe'][1]),
-        )
+            )
 
         # hit mask for player
         HIT_MASKS['player'] = (
             get_hitmask(IMAGES['player'][0]),
             get_hitmask(IMAGES['player'][1]),
             get_hitmask(IMAGES['player'][2]),
-        )
+            )
 
         movementInfo = show_welcome_animation()
         crashInfo = main_game(movementInfo)
@@ -91,7 +90,7 @@ def show_welcome_animation():
                     'playery'       : playery + playerShmVals['val'],
                     'basex'         : basex,
                     'playerIndexGen': playerIndexGen,
-                }
+                    }
         ## bird.animate()
         # adjust playery, playerIndex, basex
         if (loopIter + 1) % 5 == 0:
@@ -133,13 +132,13 @@ def main_game(movement_info):
     upperPipes = [
         {'x': SCREENWIDTH + 200, 'y': newPipe1[0]['y']},
         {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
-    ]
+        ]
 
     # list of lowerpipe
     lowerPipes = [
         {'x': SCREENWIDTH + 200, 'y': newPipe1[1]['y']},
         {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[1]['y']},
-    ]
+        ]
 
     pipeVelX = -4
 
@@ -187,7 +186,7 @@ def main_game(movement_info):
                 'score'      : score,
                 'playerVelY' : playerVelY,
                 'playerRot'  : playerRot
-            }
+                }
 
         # check for score
         playerMidPos = player_x + IMAGES['player'][0].get_width() / 2
@@ -340,7 +339,7 @@ def get_random_pipe():
     return [
         {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
         {'x': pipeX, 'y': gapY + PIPE_GAP_SIZE},  # lower pipe
-    ]
+        ]
 
 
 def showScore(score):
