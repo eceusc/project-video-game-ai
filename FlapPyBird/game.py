@@ -1,9 +1,8 @@
-from statistics import mean
-
 from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE, K_1
 
 from FlapPyBird.bird import Bird
 from FlapPyBird.helpers import *
+from FlapPyBird import constants
 
 
 def debugger(param):
@@ -12,9 +11,13 @@ def debugger(param):
 
 
 class FlappyBirdGame:
-    population_size = 20
+    """
+    This class runs an instance of the flappy bird game.
+    """
+    population_size = -1  # should be set in init, this val should cause an error
+    genomes = None
 
-    def __init__(self):
+    def __init__(self, genomes):
         """
             Sets up and runs the game.
 
@@ -28,12 +31,19 @@ class FlappyBirdGame:
 
         global SCREEN, FPSCLOCK
 
+        # enable ai here
+        self.ai_enabled = True
+
         # initialize some game variables
         self.upper_pipes = None
         self.lower_pipes = None
         self.pipe_vel_x = -4
-        self.ai_enabled = False
-        self.players = None  # todo possibly init here
+
+        constants.genomes_to_run = genomes
+        FlappyBirdGame.population_size = len(genomes)
+
+        # initialize players
+        self.players = [Bird() for _ in range(FlappyBirdGame.population_size)]
 
         # pygame code
         pygame.init()
@@ -46,7 +56,7 @@ class FlappyBirdGame:
 
         load_assets()
 
-        # start the game loops
+        # start the game loops (for now, loop should only execute once)
         while True:
             # select random assets
             randomize_assets()
@@ -54,11 +64,12 @@ class FlappyBirdGame:
             # generate hitmasks
             populate_hitmasks()
 
-            # generate players
-            self.players = [Bird() for _ in range(FlappyBirdGame.population_size)]
-
             # self.welcome_screen()
             self.main_game_loop()
+
+            # when game is over, reset the state
+            FlappyBirdGame.reset_state()
+            break
             # self.game_over()
 
     ''' main game logic here'''
@@ -95,7 +106,7 @@ class FlappyBirdGame:
                     print('AI enabled :', self.ai_enabled)
 
             # handle the AI logic
-            self.map_players_to(Bird.ai)
+            if self.ai_enabled: self.map_players_to(Bird.ai)
 
             # check for crash
             self.map_players_to(Bird.check_crash)
@@ -122,6 +133,9 @@ class FlappyBirdGame:
             # render the score
             self.show_score()
 
+            # render the number alive
+            # print('Num_alive', self.num_alive())
+
             # render the player
             self.map_players_to(Bird.render_player_sprite)
 
@@ -137,7 +151,6 @@ class FlappyBirdGame:
         Note: this will most likely be removed in favor of training without interruptions.
         """
         # initialize player here
-
 
         message_x = int(SCREENWIDTH - IMAGES['message'].get_width()) / 2
         message_y = int(SCREENHEIGHT * 0.12)
@@ -206,13 +219,13 @@ class FlappyBirdGame:
         self.upper_pipes = [
             {'x': SCREENWIDTH + 200, 'y': new_pipe_1[0]['y']},
             {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[0]['y']},
-            ]
+        ]
 
         # list of lower pipes
         self.lower_pipes = [
             {'x': SCREENWIDTH + 200, 'y': new_pipe_1[1]['y']},
             {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': new_pipe_2[1]['y']},
-            ]
+        ]
 
         # communicate with Bird class
         Bird.lower_pipes = self.lower_pipes
@@ -249,15 +262,19 @@ class FlappyBirdGame:
             self.upper_pipes.pop(0)
             self.lower_pipes.pop(0)
 
-    def map_players_to(self, func):
+    def map_players_to(self, func, data=None):
         """
         Maps a given function to the entire player population. May help organize things better. (Bascially a wrapper)/
         Args:
+            data: extra function arguments to pass. Currently only one arg supported.
             func: function to map over the player population.
 
         Returns: population after modification. Will not apply changes in-place.
 
         """
+        if data is not None:
+            assert len(data) == len(self.players), "Not enough extra arguments for entire population"
+            return list((map(func, zip(self.players, data))))
         return list((map(func, self.players)))
 
     def show_score(self):
@@ -281,7 +298,6 @@ class FlappyBirdGame:
             SCREEN.blit(IMAGES['numbers'][digit], (x_offset, SCREENHEIGHT * 0.1))
             x_offset += IMAGES['numbers'][digit].get_width()
 
-
     ''' ai logic here'''
 
     def map_population_to_genome(self, genome):
@@ -294,4 +310,13 @@ class FlappyBirdGame:
 
         """
         pass
-instance = FlappyBirdGame()
+
+    @classmethod
+    def reset_state(cls):
+        # reset the bird class vars
+        Bird.num_birds = 0
+        Bird.lower_pipes = None
+        Bird.upper_pipes = None
+
+    def num_alive(self):
+        return sum([1 if x.alive else 0 for x in self.players])

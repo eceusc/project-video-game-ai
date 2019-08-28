@@ -1,5 +1,8 @@
 import neat
 
+from FlapPyBird import FlappyBirdGame, constants
+from ai import visualize
+
 
 def create_config(conf_file):
     # have everything set to default settings for now, can technically change the config file.
@@ -9,7 +12,7 @@ def create_config(conf_file):
         neat.DefaultSpeciesSet,
         neat.DefaultStagnation,
         conf_file
-        )
+    )
 
 
 def fitness(genomes, conf):
@@ -22,27 +25,18 @@ def fitness(genomes, conf):
     Returns:
 
     """
-
-    for gid, genome in genomes:
-        # for each genome, repeat
-        # define initial genome fitness
-        # genome.fitness
-
-        # run the network
-        net = neat.nn.FeedForwardNetwork.create(genome, conf)
-
-        # calculate and assign fitness
-        for xi, xo in zip(train_input, train_output):
-            pred = net.activate(xi)
-            genome.fitness -= sd(pred[0], xo)
-            # print('fitness of', gid, 'is', sd(pred[0], xo))
+    # dispatch genomes to flappy bird instance
+    # create a flappy bird game instance and pass it the genomes and configuration files
+    # this will automatically set the genome fitnesses
+    game_instance = FlappyBirdGame(genomes)
 
 
 def run(epochs):
-    conf_filepath = './configs/flappy_ai.config'
+    conf_filepath = './ai/configs/flappy_ai.config'
 
     # make a config file
     conf = create_config(conf_filepath)
+    constants.conf = conf
 
     # make a new population
     pop = neat.Population(conf)
@@ -65,28 +59,7 @@ def run(epochs):
     print('\nOutput:')
     winner_net = neat.nn.FeedForwardNetwork.create(winner, conf)
 
-    corr, total = 0., 0.
-
-    for xi, xo in zip(test_inputs, test_outputs):
-        output = winner_net.activate(xi)
-        print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output), end='')
-        if output[0] > 0.6:
-            output = 1
-        else:
-            output = 0
-
-        if abs(xo - output) < 0.05:
-            corr += 1
-            print(' [correct]')
-        else:
-            print(' [incorrect]')
-        total += 1
-
-    print("Test acc:", corr / total)
-    node_names = {-1: 'A', -2: 'B', 0: 'A XOR B'}
+    node_names = {-1: 'Height', -2: 'Distance to Pipe', -3: 'Gap Size', -4:'pipe_y', 0: 'FLAP'}
     visualize.draw_net(conf, winner, True, node_names=node_names)
     visualize.plot_stats(stats, ylog=False, view=True)
     visualize.plot_species(stats, view=True)
-
-
-run(3000)

@@ -1,3 +1,4 @@
+import os
 import sys
 
 import pygame
@@ -5,7 +6,8 @@ import pygame
 """
 Define constants that are singular numbers here.
 """
-FPS = 30  # (30) framerate. Changing this will mess with game speed.
+time_mult = 6
+FPS = 30 * time_mult  # (30) framerate. Changing this will mess with game speed.
 SCREENWIDTH = 288  # (288) size of screen. Changing it doesn't scale the game automatically.
 SCREENHEIGHT = 512  # (512) size of screen. Changing it doesn't scale the game automatically.
 PIPE_GAP_SIZE = 100  # (100) gap between upper and lower part of pipe
@@ -16,6 +18,8 @@ Load in assets into dictionaries here.
 """
 IMAGES, SOUNDS, HIT_MASKS = {}, {}, {}
 
+genomes_to_run = None
+conf = None
 
 # numbers sprites for score display
 def load_assets():
@@ -32,25 +36,26 @@ def load_images():
     :return: None.
     """
     global IMAGES
+
     IMAGES['numbers'] = (
-        pygame.image.load('assets/sprites/0.png').convert_alpha(),
-        pygame.image.load('assets/sprites/1.png').convert_alpha(),
-        pygame.image.load('assets/sprites/2.png').convert_alpha(),
-        pygame.image.load('assets/sprites/3.png').convert_alpha(),
-        pygame.image.load('assets/sprites/4.png').convert_alpha(),
-        pygame.image.load('assets/sprites/5.png').convert_alpha(),
-        pygame.image.load('assets/sprites/6.png').convert_alpha(),
-        pygame.image.load('assets/sprites/7.png').convert_alpha(),
-        pygame.image.load('assets/sprites/8.png').convert_alpha(),
-        pygame.image.load('assets/sprites/9.png').convert_alpha()
+        pygame.image.load('FlapPyBird/assets/sprites/0.png').convert_alpha(),
+        pygame.image.load('FlapPyBird/assets/sprites/1.png').convert_alpha(),
+        pygame.image.load('FlapPyBird/assets/sprites/2.png').convert_alpha(),
+        pygame.image.load('FlapPyBird/assets/sprites/3.png').convert_alpha(),
+        pygame.image.load('FlapPyBird/assets/sprites/4.png').convert_alpha(),
+        pygame.image.load('FlapPyBird/assets/sprites/5.png').convert_alpha(),
+        pygame.image.load('FlapPyBird/assets/sprites/6.png').convert_alpha(),
+        pygame.image.load('FlapPyBird/assets/sprites/7.png').convert_alpha(),
+        pygame.image.load('FlapPyBird/assets/sprites/8.png').convert_alpha(),
+        pygame.image.load('FlapPyBird/assets/sprites/9.png').convert_alpha()
     )
 
     # game over sprite
-    IMAGES['gameover'] = pygame.image.load('assets/sprites/gameover.png').convert_alpha()
+    IMAGES['gameover'] = pygame.image.load('FlapPyBird/assets/sprites/gameover.png').convert_alpha()
     # message sprite for welcome screen
-    IMAGES['message'] = pygame.image.load('assets/sprites/message.png').convert_alpha()
+    IMAGES['message'] = pygame.image.load('FlapPyBird/assets/sprites/message.png').convert_alpha()
     # base (ground) sprite
-    IMAGES['base'] = pygame.image.load('assets/sprites/base.png').convert_alpha()
+    IMAGES['base'] = pygame.image.load('FlapPyBird/assets/sprites/base.png').convert_alpha()
 
 
 def load_sound():
@@ -65,44 +70,44 @@ def load_sound():
     else:
         soundExt = '.ogg'
 
-    SOUNDS['die'] = pygame.mixer.Sound('assets/audio/die' + soundExt)
-    SOUNDS['hit'] = pygame.mixer.Sound('assets/audio/hit' + soundExt)
-    SOUNDS['point'] = pygame.mixer.Sound('assets/audio/point' + soundExt)
-    SOUNDS['swoosh'] = pygame.mixer.Sound('assets/audio/swoosh' + soundExt)
-    SOUNDS['wing'] = pygame.mixer.Sound('assets/audio/wing' + soundExt)
+    SOUNDS['die'] = pygame.mixer.Sound('FlapPyBird/assets/audio/die' + soundExt)
+    SOUNDS['hit'] = pygame.mixer.Sound('FlapPyBird/assets/audio/hit' + soundExt)
+    SOUNDS['point'] = pygame.mixer.Sound('FlapPyBird/assets/audio/point' + soundExt)
+    SOUNDS['swoosh'] = pygame.mixer.Sound('FlapPyBird/assets/audio/swoosh' + soundExt)
+    SOUNDS['wing'] = pygame.mixer.Sound('FlapPyBird/assets/audio/wing' + soundExt)
 
 
 # list of all possible players (tuple of 3 positions of flap)
 PLAYERS_LIST = (
     # red bird
     (
-        'assets/sprites/redbird-upflap.png',
-        'assets/sprites/redbird-midflap.png',
-        'assets/sprites/redbird-downflap.png',
+        'FlapPyBird/assets/sprites/redbird-upflap.png',
+        'FlapPyBird/assets/sprites/redbird-midflap.png',
+        'FlapPyBird/assets/sprites/redbird-downflap.png',
     ),
     # blue bird
     (
-        'assets/sprites/bluebird-upflap.png',
-        'assets/sprites/bluebird-midflap.png',
-        'assets/sprites/bluebird-downflap.png',
+        'FlapPyBird/assets/sprites/bluebird-upflap.png',
+        'FlapPyBird/assets/sprites/bluebird-midflap.png',
+        'FlapPyBird/assets/sprites/bluebird-downflap.png',
     ),
     # yellow bird
     (
-        'assets/sprites/yellowbird-upflap.png',
-        'assets/sprites/yellowbird-midflap.png',
-        'assets/sprites/yellowbird-downflap.png',
+        'FlapPyBird/assets/sprites/yellowbird-upflap.png',
+        'FlapPyBird/assets/sprites/yellowbird-midflap.png',
+        'FlapPyBird/assets/sprites/yellowbird-downflap.png',
     ),
 )
 
 # list of backgrounds
 BACKGROUNDS_LIST = (
-    'assets/sprites/background-day.png',
-    'assets/sprites/background-night.png',
+    'FlapPyBird/assets/sprites/background-day.png',
+    'FlapPyBird/assets/sprites/background-night.png',
 )
 
 # list of pipes
 PIPES_LIST = (
-    'assets/sprites/pipe-green.png',
-    'assets/sprites/pipe-red.png',
+    'FlapPyBird/assets/sprites/pipe-green.png',
+    'FlapPyBird/assets/sprites/pipe-red.png',
 )
 

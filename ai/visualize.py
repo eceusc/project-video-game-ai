@@ -6,6 +6,9 @@ import warnings
 import graphviz
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
 
 
 def plot_stats(statistics, ylog=False, view=False, filename='avg_fitness.svg'):
@@ -132,10 +135,10 @@ def draw_net(config, genome, view=False, filename=None, node_names=None, show_di
     assert type(node_colors) is dict
 
     node_attrs = {
-        'shape': 'circle',
+        'shape'   : 'circle',
         'fontsize': '9',
-        'height': '0.2',
-        'width': '0.2'}
+        'height'  : '0.2',
+        'width'   : '0.2'}
 
     dot = graphviz.Digraph(format=fmt, node_attr=node_attrs)
 
@@ -176,13 +179,13 @@ def draw_net(config, genome, view=False, filename=None, node_names=None, show_di
         if n in inputs or n in outputs:
             continue
 
-        attrs = {'style': 'filled',
+        attrs = {'style'    : 'filled',
                  'fillcolor': node_colors.get(n, 'white')}
         dot.node(str(n), _attributes=attrs)
 
     for cg in genome.connections.values():
         if cg.enabled or show_disabled:
-            #if cg.input not in used_nodes or cg.output not in used_nodes:
+            # if cg.input not in used_nodes or cg.output not in used_nodes:
             #    continue
             input, output = cg.key
             a = node_names.get(input, str(input))

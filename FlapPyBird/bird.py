@@ -1,6 +1,10 @@
+from time import time
 from itertools import cycle
 from pprint import pformat, pprint
 
+import neat
+
+from FlapPyBird import constants
 from FlapPyBird.helpers import *
 
 
@@ -33,7 +37,7 @@ class Bird:
         'crash_test'      : (True, False),  # helps track if the bird crashed, and how
         'alive'           : True,  # helps track if the bird is alive in the population
 
-        }
+    }
 
     lower_pipes = None
     upper_pipes = None
@@ -78,8 +82,17 @@ class Bird:
         # randomize some parameters, such as starting height
         self.pos_y = self.random_height()
 
+        # tag each bird
+        self.identifier = Bird.num_birds
+
+        # create ai net for each bird
+        self.initialize_ai()
+
         # increment Bird counter
         Bird.num_birds += 1
+
+        # remember time of birth
+        self.birth_time = time()
 
     def __repr__(self):
         """
@@ -284,6 +297,9 @@ class Bird:
         if self.crash_test[0]:
             # assert self.alive, 'Something is wrong, dead bird is dying again'
             self.alive = False
+            # assign the fitness
+            self.genome.fitness = self.get_fitness()
+            self.crash_test = False, False
 
     ''' ai helper methods here'''
 
@@ -295,8 +311,26 @@ class Bird:
         """
         if not self.alive:
             return
+        assert hasattr(self, 'net'), "Bird has ai enabled but does not appear to have any agents"
 
+        activation = self.net.activate(self.get_inputs().values())[0]
+        if activation > 0.5:
+            self.flap()
 
+    def initialize_ai(self):
+        """
+        Initializes the ai net for each bird according to configuration rules.
+        Args:
+            genomes: list of genomes for the population
+            conf: configuration object for neat
+
+        Returns:
+
+        """
+
+        self.gid, self.genome = constants.genomes_to_run[self.identifier]
+        self.genome.fitness = -1
+        self.net = neat.nn.FeedForwardNetwork.create(self.genome, constants.conf)
 
     def get_inputs(self):
         """
@@ -314,10 +348,22 @@ class Bird:
         distance_to_pipe = Bird.upper_pipes[0]['x'] - self.pos_x
 
         if distance_to_pipe < 0:
-            print('distance to pipe < 0:', distance_to_pipe)
+            # print('distance to pipe < 0:', distance_to_pipe)
             distance_to_pipe = 0
 
         # get pipe gap
         gap = PIPE_GAP_SIZE
 
-        return {'height': height, 'distance_to_pipe': distance_to_pipe, 'gap': gap}
+        # get pipe lip
+        pipe_y = Bird.lower_pipes[0]['y']
+        return {'height': height, 'distance_to_pipe': distance_to_pipe, 'gap': gap, 'pipe_y':pipe_y}
+
+    def get_fitness(self):
+        """
+        Define the fitness function here.
+        Returns: real-valued number representing fitness.
+
+        """
+
+        time_alive = (time() - self.birth_time)
+        return time_alive + 2 * self.score
