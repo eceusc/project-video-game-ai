@@ -59,7 +59,7 @@ def run(epochs):
     print('\nOutput:')
     winner_net = neat.nn.FeedForwardNetwork.create(winner, conf)
 
-    node_names = {-1: 'Height', -2: 'Distance to Pipe', -3: 'Gap Size', -4:'pipe_y', 0: 'FLAP'}
+    node_names = {-1: 'Pipe1 Midpt', -2: 'Pipe2 Midpt', -3: 'Height', -4:'Velocity', -5 : 'rotation', 0: 'FLAP'}
     visualize.draw_net(conf, winner, True, node_names=node_names)
     visualize.plot_stats(stats, ylog=False, view=True)
     visualize.plot_species(stats, view=True)

@@ -17,7 +17,7 @@ class Bird:
     default_player_values = {
         'score'           : 0,  # Number of pipes passed
         'vel_y'           : 0,  # Velocity along Y axis
-        'max_vel_y'       : 16,  # Max descend speed
+        'max_vel_y'       : 20,  # Max descend speed
         'min_vel_y'       : -10,  # Max ascend speed
         'rot'             : 45,  # Rotation
         'rot_vel'         : 3,  # Rotation velocity
@@ -82,6 +82,7 @@ class Bird:
         self.pos_y = self.random_height()
 
         # tag each bird
+
         self.identifier = Bird.num_birds
 
         # create ai net for each bird
@@ -119,7 +120,7 @@ class Bird:
         Returns: [crash_pipe, crash_ground].
         """
         # will pick a number in this interval, so that the bird doesnt spawn absolutely at the edges of the screen.
-        interval = [0.2, 0.8]
+        interval = [0.4, 0.5]
         return int(SCREENHEIGHT * random.uniform(*interval))
 
     def check_crash(self):
@@ -352,7 +353,8 @@ class Bird:
         inputs = list(self.midpoint_of_pipes()) + list(self.distance_to_pipe()) + [self.pos_y, self.vel_y,
                                                                                    self.acc_flap, self.rot]
 
-        inputs = list(self.midpoint_of_pipes()) + [self.pos_y, self.vel_y, self.rot]
+        inputs = list(self.midpoint_of_pipes()) + list(self.distance_to_pipe()) + [self.pos_y, self.pos_x, self.vel_y,
+                                                                                   self.rot, self.flapped]
 
         # inputs = list(self.midpoint_of_pipes()) + [self.pos_y]
         inputs[0] -= self.pos_y
@@ -393,5 +395,5 @@ class Bird:
         """
         score = self.score - (abs(self.distance_to_pipe()[0])) * 0.3
         score = self.score + 1.5 * 1e-2 * self.birth_time - (abs(self.distance_to_pipe()[0])) * 0.06
-        score = self.score + 1.5 * 1e-2 * self.birth_time
+        score = self.score + 1e-3 * self.birth_time
         return score

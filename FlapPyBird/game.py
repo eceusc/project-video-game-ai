@@ -1,8 +1,9 @@
-from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE, K_1
+from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE, K_1, K_2, K_3, K_4
 
-from FlapPyBird.bird import Bird
-from FlapPyBird.helpers import *
 from FlapPyBird import constants
+from FlapPyBird.bird import Bird
+from FlapPyBird.constants import FPS
+from FlapPyBird.helpers import *
 
 
 def debugger(param):
@@ -105,6 +106,19 @@ class FlappyBirdGame:
                     self.ai_enabled = not self.ai_enabled
                     print('AI enabled :', self.ai_enabled)
 
+                # speed controls
+                if event.type == KEYDOWN and event.key == K_2:
+                    constants.FPS = 30
+                    print('Set speed to normal22344324234')
+                    pass
+                if event.type == KEYDOWN and event.key == K_3:
+                    constants.FPS = 30 * 2
+                    pass
+
+                if event.type == KEYDOWN and event.key == K_4:
+                    constants.FPS = 30 * constants.time_mult
+                    pass
+
             # handle the AI logic
             if self.ai_enabled: self.map_players_to(Bird.ai)
 
@@ -140,7 +154,7 @@ class FlappyBirdGame:
             self.map_players_to(Bird.render_player_sprite)
 
             # pygame stuff
-            FPSCLOCK.tick(FPS)
+            FPSCLOCK.tick(constants.FPS)
             pygame.display.update()
 
     def welcome_screen(self):

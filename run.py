@@ -1,4 +1,4 @@
 from ai.neat_flappy_bird import run
 
 
-run(500)
+run(4000)

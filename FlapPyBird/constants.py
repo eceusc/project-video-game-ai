@@ -6,11 +6,11 @@ import pygame
 """
 Define constants that are singular numbers here.
 """
-time_mult = 100
+time_mult = 15
 FPS = 30 * time_mult  # (30) framerate. Changing this will mess with game speed.
-SCREENWIDTH = int(288 * 1) # (288) size of screen. Changing it doesn't scale the game automatically.
+SCREENWIDTH = int(288 * 1)  # (288) size of screen. Changing it doesn't scale the game automatically.
 SCREENHEIGHT = 512  # (512) size of screen. Changing it doesn't scale the game automatically.
-PIPE_GAP_SIZE = 130  # (100) gap between upper and lower part of pipe
+PIPE_GAP_SIZE = 100  # (100) gap between upper and lower part of pipe
 BASE_Y = SCREENHEIGHT * 0.79  # (* 0.79) min height for the screen to render pipes.
 
 """
@@ -20,6 +20,7 @@ IMAGES, SOUNDS, HIT_MASKS = {}, {}, {}
 
 genomes_to_run = None
 conf = None
+
 
 # numbers sprites for score display
 def load_assets():
@@ -110,4 +111,3 @@ PIPES_LIST = (
     'FlapPyBird/assets/sprites/pipe-green.png',
     'FlapPyBird/assets/sprites/pipe-red.png',
 )
-
