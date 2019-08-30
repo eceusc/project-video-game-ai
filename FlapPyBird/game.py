@@ -1,4 +1,4 @@
-from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE, K_1, K_2, K_3, K_4
+from pygame.constants import QUIT, KEYDOWN, K_UP, K_ESCAPE, K_SPACE, K_1, K_2, K_3, K_4, K_a
 
 from FlapPyBird import constants
 from FlapPyBird.bird import Bird
@@ -38,7 +38,7 @@ class FlappyBirdGame:
         # initialize some game variables
         self.upper_pipes = None
         self.lower_pipes = None
-        self.pipe_vel_x = -4
+        self.pipe_vel_x = -6  # -4 default
 
         constants.genomes_to_run = genomes
         FlappyBirdGame.population_size = len(genomes)
@@ -119,6 +119,10 @@ class FlappyBirdGame:
                     constants.FPS = 30 * constants.time_mult
                     pass
 
+                # render all or just one bird
+                if event.type == KEYDOWN and event.key == K_a:
+                    constants.render_all = not constants.render_all
+
             # handle the AI logic
             if self.ai_enabled: self.map_players_to(Bird.ai)
 
@@ -134,6 +138,10 @@ class FlappyBirdGame:
 
             # score the birds
             self.map_players_to(Bird.check_score)
+
+            # once the birds are scored, only show the winner
+            winner = [x for x in self.players if x.alive][-1]
+            winner.winner = True
 
             # rotate and move players
             self.map_players_to(Bird.animate_player)
@@ -152,6 +160,10 @@ class FlappyBirdGame:
 
             # render the player
             self.map_players_to(Bird.render_player_sprite)
+
+            # set the render flags to false
+            for p in self.players:
+                p.winner = False
 
             # pygame stuff
             FPSCLOCK.tick(constants.FPS)
@@ -212,7 +224,9 @@ class FlappyBirdGame:
         """
         # draw sprites
         SCREEN.blit(IMAGES['background'], (0, 0))
+        pygame.draw.circle(SCREEN, 255, constants.debug_circle, 2, 0)
 
+        # draw a circle
         for uPipe, lPipe in zip(self.upper_pipes, self.lower_pipes):
             SCREEN.blit(IMAGES['pipe'][0], (uPipe['x'], uPipe['y']))
             SCREEN.blit(IMAGES['pipe'][1], (lPipe['x'], lPipe['y']))

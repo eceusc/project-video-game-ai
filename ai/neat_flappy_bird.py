@@ -58,8 +58,15 @@ def run(epochs):
     # Show output of the most fit genome against training data.
     print('\nOutput:')
     winner_net = neat.nn.FeedForwardNetwork.create(winner, conf)
+    node_names = 'Pipe1 Midpt, Pipe2Midpt, Pipe1 Dist, Pipe2 Dist, Height, PosX, Velocity, Rotation, Flapped'
+    temp = node_names.split(', ')
 
-    node_names = {-1: 'Pipe1 Midpt', -2: 'Pipe2 Midpt', -3: 'Height', -4:'Velocity', -5 : 'rotation', 0: 'FLAP'}
+    node_names = {}
+    print(temp)
+    for i, e in enumerate   (temp):
+        node_names[-(i+1)] = e
+
+    node_names[0] = 'FLAP'
     visualize.draw_net(conf, winner, True, node_names=node_names)
     visualize.plot_stats(stats, ylog=False, view=True)
     visualize.plot_species(stats, view=True)

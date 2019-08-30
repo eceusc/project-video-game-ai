@@ -1,3 +1,4 @@
+from statistics import mean
 from time import time
 from itertools import cycle
 from pprint import pformat, pprint
@@ -7,6 +8,8 @@ import neat
 from FlapPyBird import constants
 from FlapPyBird.helpers import *
 
+
+# import keras
 
 class Bird:
     """
@@ -20,10 +23,10 @@ class Bird:
         'max_vel_y'       : 20,  # Max descend speed
         'min_vel_y'       : -10,  # Max ascend speed
         'rot'             : 45,  # Rotation
-        'rot_vel'         : 3,  # Rotation velocity
+        'rot_vel'         : 4,  # Rotation velocity
         'rot_thresh'      : 20,  # Rotation threshold
         'acc_flap'        : -11,  # Speed on flapping
-        'acc_y'           : 1,  # Gravity/Downward acc
+        'acc_y'           : 3,  # Gravity/Downward acc
         'flapped'         : False,  # True when player flaps
         'ai_enabled'      : False,  # True if AI agent is playing the bird
         'pos_x'           : SCREENWIDTH * 0.2,  # starting position, left of screen
@@ -36,6 +39,8 @@ class Bird:
         'base_shift'      : -1,  # max shift amount
         'crash_test'      : (True, False),  # helps track if the bird crashed, and how
         'alive'           : True,  # helps track if the bird is alive in the population
+        'last_flapped'    : time(),
+        'winner'          : False,  # checks if current bird is the best. this is a flag to render.
     }
 
     lower_pipes = None
@@ -112,6 +117,7 @@ class Bird:
         if self.pos_y > -2 * IMAGES['player'][0].get_height():
             self.vel_y = self.acc_flap
             self.flapped = True
+            self.last_flapped = time()
 
     @staticmethod
     def random_height():
@@ -259,13 +265,21 @@ class Bird:
         Returns: None. Blits sprites.
 
         """
+        # dont render dead players
         if not self.alive:
             return
-        # if in the game, we can start doing the rotations
 
+        # only render the base for the winner
+        if self.winner:
+            Bird.SCREEN.blit(IMAGES['base'], (self.base_x, BASE_Y))
+
+        # if we dont want to render all, then only render the winner
+        if not constants.render_all and not self.winner:
+            return
+
+        # if in the game, we can start doing the rotations
         player_surface = pygame.transform.rotate(IMAGES['player'][self.player_index], self.visible_rot)
         Bird.SCREEN.blit(player_surface, (self.pos_x, self.pos_y))
-        Bird.SCREEN.blit(IMAGES['base'], (self.base_x, BASE_Y))
 
     def check_score(self):
         """
@@ -321,7 +335,7 @@ class Bird:
         # if activation > 1e3:
         #     print('unusually high activation of', activation)
 
-        if activation > 0.5:
+        if activation > 0.9:
             self.flap()
 
     def initialize_ai(self):
@@ -338,6 +352,8 @@ class Bird:
         self.gid, self.genome = constants.genomes_to_run[self.identifier]
         self.genome.fitness = -1
         self.net = neat.nn.FeedForwardNetwork.create(self.genome, constants.conf)
+        # self.net = neat.nn.RecurrentNetwork
+        # .create(self.genome, constants.conf)
 
     def get_inputs(self):
         """
@@ -349,16 +365,20 @@ class Bird:
             return None
 
         # inputs = [self.get_next_pipe_midpoint() - self.pos_y] + self.distance_to_pipe()
+        pipe_width = IMAGES['pipe'][0].get_width()
 
         inputs = list(self.midpoint_of_pipes()) + list(self.distance_to_pipe()) + [self.pos_y, self.vel_y,
                                                                                    self.acc_flap, self.rot]
-
         inputs = list(self.midpoint_of_pipes()) + list(self.distance_to_pipe()) + [self.pos_y, self.pos_x, self.vel_y,
-                                                                                   self.rot, self.flapped]
+                                                                                   self.rot,
+                                                                                   time() - self.last_flapped]
 
         # inputs = list(self.midpoint_of_pipes()) + [self.pos_y]
-        inputs[0] -= self.pos_y
-        inputs[0] -= self.pos_y
+        inputs[0] -= self.pos_y - 0.5 * PIPE_GAP_SIZE + 10
+        inputs[0] -= self.pos_y - 0.5 * PIPE_GAP_SIZE + 10
+        inputs[-1] *= 10  # convert time to 100ms scale
+
+        # inputs = constants.midpt_1 + [self.pos_y, self.pos_x, self.vel_y, self.rot, time() - self.last_flapped]
         return inputs
 
     def distance_to_pipe(self):
@@ -394,6 +414,26 @@ class Bird:
 
         """
         score = self.score - (abs(self.distance_to_pipe()[0])) * 0.3
-        score = self.score + 1.5 * 1e-2 * self.birth_time - (abs(self.distance_to_pipe()[0])) * 0.06
-        score = self.score + 1e-3 * self.birth_time
+        score = self.score + 1.5 * 1e-3 * self.birth_time - (abs(self.distance_to_pipe()[0])) * 0.001
+        score = self.birth_time * 3 - \
+                (abs(Bird.lower_pipes[self.get_next_pipe_index()]['y'] - PIPE_GAP_SIZE // 2 - self.pos_y)) * 0.5
+        pipe_width = IMAGES['pipe'][0].get_width()
+
+        constants.debug_circle = Bird.lower_pipes[self.get_next_pipe_index()]['x'] + pipe_width // 1.2, \
+                                 Bird.lower_pipes[
+                                     self.get_next_pipe_index()]['y'] - PIPE_GAP_SIZE // 10
+        constants.debug_circle = tuple(map(int, constants.debug_circle))
+        # score *= 1e-1
+        # score = self.score
+        # if self.score > 1:
+        #     print(score)
+
+        score = self.birth_time * 3 - abs(constants.debug_circle[1] - self.pos_y) + 5 * self.score
         return score
+
+    def mse(self, circle):
+        return sum([(self.pos_x - circle[0]) ** 2, (self.pos_y - circle[1]) ** 2]) ** 0.5
+
+    def create_sgd_net(self):
+        num_inputs = 9
+        num_ouputs = 1
