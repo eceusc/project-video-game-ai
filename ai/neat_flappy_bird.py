@@ -31,7 +31,11 @@ def fitness(genomes, conf):
     game_instance = FlappyBirdGame(genomes)
 
 
-def run(epochs):
+def train_from_disk():
+    pass
+
+
+def run(epochs, fname=None):
     conf_filepath = './ai/configs/flappy_ai.config'
 
     # make a config file
@@ -40,6 +44,9 @@ def run(epochs):
 
     # make a new population
     pop = neat.Population(conf)
+
+    if fname is not None:
+        pop = neat.Checkpointer.restore_checkpoint(fname)
 
     # make statistical reporters
     stats = neat.StatisticsReporter()
@@ -63,8 +70,8 @@ def run(epochs):
 
     node_names = {}
     print(temp)
-    for i, e in enumerate   (temp):
-        node_names[-(i+1)] = e
+    for i, e in enumerate(temp):
+        node_names[-(i + 1)] = e
 
     node_names[0] = 'FLAP'
     visualize.draw_net(conf, winner, True, node_names=node_names)
