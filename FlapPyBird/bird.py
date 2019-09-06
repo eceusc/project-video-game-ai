@@ -25,7 +25,7 @@ class Bird:
         'rot'             : 45,  # Rotation
         'rot_vel'         : 4,  # Rotation velocity
         'rot_thresh'      : 20,  # Rotation threshold
-        'acc_flap'        : -11,  # Speed on flapping
+        'acc_flap'        : -12,  # Speed on flapping
         'acc_y'           : 3,  # Gravity/Downward acc
         'flapped'         : False,  # True when player flaps
         'ai_enabled'      : False,  # True if AI agent is playing the bird

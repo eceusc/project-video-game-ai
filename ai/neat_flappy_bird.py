@@ -1,5 +1,6 @@
 import neat
 
+
 from FlapPyBird import FlappyBirdGame, constants
 from ai import visualize
 
